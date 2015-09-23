@@ -1,0 +1,22 @@
+{
+  "name": "fizz-fuzz",
+  "version": "1.0.0",
+  "description": "Web Fuzzer project for SWEN-331 (Engineering of Secure Software)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mok4ry/fizz-fuzz.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mok4ry/fizz-fuzz/issues"
+  },
+  "homepage": "https://github.com/mok4ry/fizz-fuzz#readme",
+  "devDependencies": {
+    "zombie": "^4.1.0"
+  }
+}
