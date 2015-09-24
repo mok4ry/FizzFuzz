@@ -7,14 +7,14 @@ Dominic Cicilio
 Matt Mokary
 
 ## How to Run
-You'll need the following things on your machine to start:
+You'll need the following things on your machine to start:  
 1. Node 4.x
 
-To run the application, navigate to this directory, and run the following:
-1. ```npm install```
-2. ```node fuzz.js <discover | test> <url> <options>
+To run the application, navigate to this directory, and run the following:  
+1. ```npm install```  
+2. ```node fuzz.js <discover | test> <url> <options>```  
 
 The two available commands are `discover` and `test`.  
 Test is currently in progress, discover is functional.  
 The url should be a fully formed url, with http or https.  
-Options can include custom auth (as described in the proposal).
+Options can include custom auth (as described in the proposal).  
