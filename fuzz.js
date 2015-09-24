@@ -1,7 +1,28 @@
+// zombie is our fast headless browser
 const Browser = require('zombie');
+// fs is node's filesystem library
+const fs = require('fs');
+// visited urls
+process.visitedURLs = [];
 
+// ================= command line arguments ===================================#
+argsObject = {};
+process.argv.forEach(function (val, index, array) {
+  if (index == 2){
+    argsObject.command = val;
+  }
+  else if (index == 3) {
+    argsObject.url = val;
+  }
+  else if (index > 3) {
+    option = val.split("--")[1].split("=")
+    argsObject[option[0]] = option[1];
+  }
+});
+// ================= end command line arguments ===============================#
+
+// ================= site objects for logging in ==============================#
 var bodgeit = {
-  loginURL: "http://127.0.0.1:8080/bodgeit/login.jsp",
   userNameSelector: "username",
   userName: "admin@gmail.com",
   passwordSelector: "password",
@@ -11,7 +32,6 @@ var bodgeit = {
 }
 
 var dwva = {
-  loginURL: "http://127.0.0.1/dvwa/login.php",
   userNameSelector: "username",
   userName: "admin",
   passwordSelector: "password",
@@ -19,27 +39,139 @@ var dwva = {
   loginSelector: "Login",
   successString: "You have logged in"
 }
+// ================= end site objects for logging in ==========================#
 
-function login(siteObject, callback) {
-  Browser.visit(siteObject.loginURL, function(e, browser) {
+// ================= functions and callback ===================================#
+// Takes a site object, logs in with the information, and runs the callback.
+// The callback exposes a browser object to interact with after logging in.
+function login(url, auth, callback) {
+  Browser.visit(url, function(e, browser) {
     browser.
-      fill(siteObject.userNameSelector, siteObject.userName).
-      fill(siteObject.passwordSelector, siteObject.password).
-      pressButton(siteObject.loginSelector, function() {
+      fill(auth.userNameSelector, auth.userName).
+      fill(auth.passwordSelector, auth.password).
+      pressButton(auth.loginSelector, function() {
         callback(browser);
       });
   });
 }
 
+// Takes a url, and runs the callback.
+// The callback exposes a browser object to interact with.
+function visit(url, callback) {
+  Browser.visit(url, function(e, browser) {
+    callback(browser);
+  });
+}
 
-login(dwva, function(browser) {
-  var bodyText = browser.document.body.textContent;
-  var didWork = bodyText.indexOf(dwva.successString) != -1;
-  console.log("Logged into DWVA: "+didWork);
-});
+// Makes a query on the page for every link
+// returns a list of urls
+function queryLinks(browser) {
+  var urls = browser.document.getElementsByTagName("a");
+  var urlNodes = Array.from(urls);
+  var links = urlNodes.map(function(node) {
+      return node.href;
+  });
+  return links;
+}
 
-login(bodgeit, function(browser) {
-  var bodyText = browser.document.body.textContent;
-  var didWork = bodyText.indexOf(bodgeit.successString) != -1;
-  console.log("Logged into BodgeIt: " + didWork);
-});
+// Makes a query on the page for every input
+// returns a list of input names
+function queryInputs(browser) {
+  var inputs = browser.document.getElementsByTagName("input");
+  var inputNodes = Array.from(inputs);
+  var ins = inputNodes.map(function(node) {
+      return node.name;
+  });
+  return ins;
+}
+
+// Makes a query for the cookies on the browser
+// returns a list of cookie elements
+function getCookies(browser) {
+  var cookies = browser.cookies
+  return cookies;
+}
+
+// Makes a query for the inputs on the URL
+// returns a list of url parameters and their values
+function getURLParams(browser) {
+  var url = browser.document.URL;
+  var params = url.split("?").filter( function(urlPiece) {
+    return (urlPiece.indexOf("=") != -1);
+  }).map( function(param) {
+    return param.split("=");
+  });
+  return params;
+}
+// ================= end functions and callback ===============================#
+
+// ================= commands =================================================#
+// lists information about the current browser session
+// crawls to an unvisited page on the same domain, and recurses
+// returns a list of visitedURLs
+function discoverAndCrawl(url) {
+  return visit(url, function(browser) {
+    urlDomain = browser.document.location.hostname
+    console.log("RUNNING DISCOVERY FOR " + url);
+    // append url to list of urls
+    process.visitedURLs.push(url);
+    console.log(process.visitedURLs.length)
+
+    console.log("   LINKS ON THE PAGE:");
+    var links = queryLinks(browser);
+    console.log(links);
+
+    console.log("   INPUTS ON THE PAGE:");
+    var inputs = queryInputs(browser);
+    console.log(inputs);
+
+    console.log("   COOKIES ON THE BROWSER:");
+    var cookies = getCookies(browser);
+    console.log(cookies);
+
+    console.log("   PARAMETERS ON THE URL:");
+    var params = getURLParams(browser);
+    console.log(params);
+
+    var crawlLinks = links.filter( function(link) {
+      return (link.indexOf(urlDomain) != -1) &&
+              (link.indexOf(".xml") == -1 ) &&
+              (process.visitedURLs.indexOf(link)==-1);
+    }).forEach( function(link) {
+      discoverAndCrawl(link);
+    }, []);
+    return crawlLinks;
+  });
+}
+
+function test() {
+  console.log("NOT IMPLEMENTED YET");
+}
+// ================= end commands =============================================#
+
+var customAuth = false;
+var auth;
+if (argsObject["custom-auth"]) {
+  customAuth = true;
+  if (argsObject["custom-auth"] == "dwva") {
+    auth = dwva;
+  }
+  else if (argsObject["custom-auth"] == "bodgeit") {
+    auth = bodgeit;
+  }
+}
+
+if (customAuth) {
+  login(argsObject.url, auth, function(browser) {
+    var bodyText = browser.document.body.textContent;
+    var didWork = bodyText.indexOf(auth.successString) != -1;
+    console.log("Logged in? : "+didWork);
+  });
+}
+
+if (argsObject.command == "test") {
+  test();
+}
+else if (argsObject.command == "discover") {
+  discoverAndCrawl(argsObject.url)
+}

@@ -2,14 +2,18 @@
 var command = "";
 var url = "";
 var options = [];
-
+argsObject = {};
 process.argv.forEach(function (val, index, array) {
-
-  if (index == 2){command = val;}
-  else if (index == 3) {url = val;}
-  else if (index > 3) {options.push(val)}
+  if (index == 2){
+    argsObject.command = val;
+  }
+  else if (index == 3) {
+    argsObject.url = val;
+  }
+  else if (index > 3) {
+    option = val.split("--")[1].split("=")
+    argsObject[option[0]] = option[1];
+  }
 });
 
-console.log("Command: " + command);
-console.log("Command: " + url);
-console.log("Command: " + options);
+console.log("argsObject " + JSON.stringify(argsObject));
