@@ -153,7 +153,7 @@ var customAuth = false;
 var auth;
 if (argsObject["custom-auth"]) {
   customAuth = true;
-  if (argsObject["custom-auth"] == "dwva") {
+  if (argsObject["custom-auth"] == "dvwa") {
     auth = dwva;
   }
   else if (argsObject["custom-auth"] == "bodgeit") {
