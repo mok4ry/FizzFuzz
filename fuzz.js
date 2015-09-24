@@ -2,15 +2,13 @@ const Browser = require('zombie');
 
 Browser.visit('http://127.0.0.1:8080/bodgeit/login.jsp', function(e, browser) {
   // log into "The BodgeIt Store"
-  var userNameNode = browser.document.getElementById("username");
-  userNameNode.value = "foobar@gmail.com";
-  var passwordNode = browser.document.getElementById("password");
-  passwordNode.value = "foobar";
-  var submitNode = browser.document.getElementById("submit");
-  submitNode.click();
+  browser.
+    fill("username", "foobar@gmail.com").
+    fill("password", "foobar").
+    pressButton("Login", function(err) {
+      // check validation text
+      var didWork = browser.document.body.textContent;
+      console.log(didWork);
+    });
 
-  // check validation text
-  var didWork = document.body.textContent.split("You have logged in successfully: ").length > 2
-
-  console.log(didWork);
 });
