@@ -103,6 +103,29 @@ function getURLParams(browser) {
   });
   return params;
 }
+
+// Checks if the inputs on the given page are sanitizing
+// the inputed values before use.
+function inputSanCheck(browser){
+  var inputs = browser.document.getElementsByTagName("input");
+  var inputNodes = Array.from(inputs);
+  inputTestHTML(browser, inputNodes);
+  return true;
+}
+
+// Inject HTML on the page and see if it becomes an element
+function inputTestHTML(browser, nodes){
+  nodes.map(function(node){
+    //Input Tests
+    console.log("worked: "+ node.name);
+  });
+  browser.
+    fill("username", "<div id='test'>test</div>").
+    fill("password", "password").
+    pressButton("Login", function() {
+      callback(browser);
+    });
+}
 // ================= end functions and callback ===============================#
 
 // ================= commands =================================================#
@@ -124,6 +147,10 @@ function discoverAndCrawl(url) {
     console.log("   INPUTS ON THE PAGE:");
     var inputs = queryInputs(browser);
     console.log(inputs);
+
+    console.log("   INPUTS ON PAGE SANITIZING")
+    var complete = inputSanCheck(browser);
+    console.log(complete);
 
     console.log("   COOKIES ON THE BROWSER:");
     var cookies = getCookies(browser);
