@@ -117,14 +117,36 @@ function inputSanCheck(browser){
 function inputTestHTML(browser, nodes){
   nodes.map(function(node){
     //Input Tests
-    console.log("worked: "+ node.name);
+    if (node.type == "submit"){
+      browser.
+        pressButton(node.name, function() {
+          console.log("submit button pressed");
+          if (browser.queryAll('test123') != []){
+            console.log("HTML was rendered to the page.");
+          }else{
+            console.log("HTML was not rendered to the page.")
+          }
+        });
+    }else{
+      node.value = "<div id='test123'></div>";
+      displayNodeStats(node);
+    }
   });
-  browser.
-    fill("username", "<div id='test'>test</div>").
-    fill("password", "password").
-    pressButton("Login", function() {
-      callback(browser);
-    });
+}
+
+// Pretty prints out information about an element
+function displayNodeStats(node){
+  console.log("Node name: " + node.name);
+  console.log("   Node type: " + node.type);
+  console.log("   Node id: " + node.id);
+  console.log("   Node value: " + node.value);
+}
+
+function readHttpResponses(browser){
+  var r = browser.resources;
+  r.forEach(function(obj){
+    console.log("Status Code: " + obj.statusCode);
+  });
 }
 // ================= end functions and callback ===============================#
 
@@ -152,6 +174,10 @@ function discoverAndCrawl(url) {
     var complete = inputSanCheck(browser);
     console.log(complete);
 
+    console.log("   READING HTTP RESPONCES")
+    var http_responces = readHttpResponses(browser);
+    console.log(http_responces);
+
     console.log("   COOKIES ON THE BROWSER:");
     var cookies = getCookies(browser);
     console.log(cookies);
@@ -174,6 +200,15 @@ function discoverAndCrawl(url) {
 function test() {
   console.log("NOT IMPLEMENTED YET");
 }
+
+function runCommand(){
+  if (argsObject.command == "test") {
+    test();
+  }
+  else if (argsObject.command == "discover") {
+    discoverAndCrawl(argsObject.url);
+  }
+}
 // ================= end commands =============================================#
 
 var customAuth = false;
@@ -193,12 +228,6 @@ if (customAuth) {
     var bodyText = browser.document.body.textContent;
     var didWork = bodyText.indexOf(auth.successString) != -1;
     console.log("Logged in? : "+didWork);
+    runCommand();
   });
-}
-
-if (argsObject.command == "test") {
-  test();
-}
-else if (argsObject.command == "discover") {
-  discoverAndCrawl(argsObject.url)
 }
