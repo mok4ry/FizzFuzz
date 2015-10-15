@@ -121,10 +121,10 @@ function inputTestHTML(browser, nodes){
       browser.
         pressButton(node.name, function() {
           console.log("submit button pressed");
-          if (browser.queryAll('test123') != []){
+          if (browser.queryAll('#test123').length > 0){
             console.log("HTML was rendered to the page.");
           }else{
-            console.log("HTML was not rendered to the page.")
+            console.log("HTML was not rendered to the page.");
           }
         });
     }else{
