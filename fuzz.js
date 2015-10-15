@@ -163,7 +163,14 @@ function readHttpResponses(browser){
   });
 }
 
-
+// Returns an array of exploits
+function vectorFileRead(filename, callback){
+  var exploits;
+  fs.readFile(filename,function(err, data){
+    exploits = data.toString().split('/n');
+    callback(exploits);
+  });
+}
 
 // ================= end functions and callback ===============================#
 
@@ -215,7 +222,8 @@ function test(url,browser) {
   process.didTakeTime = false;
   var timeoutId = setTimeout(function() {
     process.didTakeTime = true;
-  }, argsObject.slow)
+  }, argsObject.slow);
+
   visit(url,browser,function(broswer){
     console.log("   DID LOAD IN A REASONABLE TIME?");
     console.log(!process.didTakeTime);
@@ -228,8 +236,16 @@ function test(url,browser) {
     console.log("   ARE INPUTS ON PAGE SANITIZING");
     var complete = inputSanCheck(browser);
   });
-}
 
+  if (argsObject.vectors != undefined){
+      vectorFileRead(argsObject.vectors, function(exploits){
+            console.log("The Exploits");
+          exploits.forEach(function(currentValue){
+            console.log(currentValue);
+          });
+      });
+  }
+}
 // ================= end commands =============================================#
 
 var customAuth = false;
