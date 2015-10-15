@@ -163,7 +163,12 @@ function readHttpResponses(browser){
   });
 }
 
-
+// Returns an array of exploits
+function vectorFileRead(filename){
+  fs.readFile(filename,function(err, data){
+    return data.toString().split('\n');
+  });
+}
 
 // ================= end functions and callback ===============================#
 
@@ -220,6 +225,10 @@ function test(url,browser) {
     console.log("   ARE INPUTS ON PAGE SANITIZING");
     var complete = inputSanCheck(browser);
   });
+
+  if (argsObject.vectors != undefined){
+      vectorFileRead(argsObject.vectors);
+  }
 }
 
 function runCommand(){
