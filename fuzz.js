@@ -212,7 +212,15 @@ function visitAndCrawl(url, browser) {
 }
 
 function test(url,browser) {
+  process.didTakeTime = false;
+  var timeoutId = setTimeout(function() {
+    process.didTakeTime = true;
+  }, argsObject.slow)
   visit(url,browser,function(broswer){
+    console.log("   DID LOAD IN A REASONABLE TIME?");
+    console.log(!process.didTakeTime);
+    clearTimeout(timeoutId);
+
     console.log("   INPUTS ON THE PAGE:");
     var inputs = queryInputs(browser);
     console.log(inputs);
@@ -222,14 +230,6 @@ function test(url,browser) {
   });
 }
 
-function runCommand(){
-  if (argsObject.command == "test") {
-    test(argsObject.url);
-  }
-  else if (argsObject.command == "discover") {
-    discoverAndCrawl(argsObject.url);
-  }
-}
 // ================= end commands =============================================#
 
 var customAuth = false;
