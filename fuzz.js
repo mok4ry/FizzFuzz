@@ -154,46 +154,47 @@ function readHttpResponses(browser){
 // lists information about the current browser session
 // crawls to an unvisited page on the same domain, and recurses
 // returns a list of visitedURLs
-function discoverAndCrawl(url) {
+function discoverAndCrawl(browser) {
+  urlDomain = browser.document.location.hostname
+  url = browser.document.location.href
+  console.log("RUNNING DISCOVERY FOR " + url);
+  // append url to list of urls
+  process.visitedURLs.push(url);
+  console.log(process.visitedURLs.length)
+
+  console.log("   LINKS ON THE PAGE:");
+  var links = queryLinks(browser);
+  console.log(links);
+
+  console.log("   INPUTS ON THE PAGE:");
+  var inputs = queryInputs(browser);
+  console.log(inputs);
+
+  console.log("   INPUTS ON PAGE SANITIZING")
+  var complete = inputSanCheck(browser);
+  console.log(complete);
+
+  console.log("   COOKIES ON THE BROWSER:");
+  var cookies = getCookies(browser);
+  console.log(cookies);
+
+  console.log("   PARAMETERS ON THE URL:");
+  var params = getURLParams(browser);
+  console.log(params);
+
+  var crawlLinks = links.filter( function(link) {
+    return (link.indexOf(urlDomain) != -1) &&
+            (link.indexOf(".xml") == -1 ) &&
+            (process.visitedURLs.indexOf(link)==-1);
+  }).forEach( function(link) {
+    visitAndCrawl(link);
+  }, []);
+  return crawlLinks;
+}
+
+function visitAndCrawl(url) {
   return visit(url, function(browser) {
-    urlDomain = browser.document.location.hostname
-    console.log("RUNNING DISCOVERY FOR " + url);
-    // append url to list of urls
-    process.visitedURLs.push(url);
-    console.log(process.visitedURLs.length)
-
-    console.log("   LINKS ON THE PAGE:");
-    var links = queryLinks(browser);
-    console.log(links);
-
-    console.log("   INPUTS ON THE PAGE:");
-    var inputs = queryInputs(browser);
-    console.log(inputs);
-
-    console.log("   INPUTS ON PAGE SANITIZING")
-    var complete = inputSanCheck(browser);
-    console.log(complete);
-
-    console.log("   READING HTTP RESPONCES")
-    var http_responces = readHttpResponses(browser);
-    console.log(http_responces);
-
-    console.log("   COOKIES ON THE BROWSER:");
-    var cookies = getCookies(browser);
-    console.log(cookies);
-
-    console.log("   PARAMETERS ON THE URL:");
-    var params = getURLParams(browser);
-    console.log(params);
-
-    var crawlLinks = links.filter( function(link) {
-      return (link.indexOf(urlDomain) != -1) &&
-              (link.indexOf(".xml") == -1 ) &&
-              (process.visitedURLs.indexOf(link)==-1);
-    }).forEach( function(link) {
-      discoverAndCrawl(link);
-    }, []);
-    return crawlLinks;
+    discoverAndCrawl(browser);
   });
 }
 
@@ -202,12 +203,7 @@ function test() {
 }
 
 function runCommand(){
-  if (argsObject.command == "test") {
-    test();
-  }
-  else if (argsObject.command == "discover") {
-    discoverAndCrawl(argsObject.url);
-  }
+
 }
 // ================= end commands =============================================#
 
@@ -228,7 +224,23 @@ if (customAuth) {
     var bodyText = browser.document.body.textContent;
     var didWork = bodyText.indexOf(auth.successString) != -1;
     console.log("Logged in? : "+didWork);
-  });
-}
 
-runCommand();
+    if (argsObject.command == "test") {
+      test();
+    }
+    else if (argsObject.command == "discover") {
+      discoverAndCrawl(browser);
+    }
+  });
+
+}
+else {
+
+  if (argsObject.command == "test") {
+    test();
+  }
+  else if (argsObject.command == "discover") {
+    visitAndCrawl(argsObject.url);
+  }
+
+}
