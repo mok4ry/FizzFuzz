@@ -173,6 +173,31 @@ function vectorFileRead(filename, callback){
   });
 }
 
+//Checking for data leaks in the inputs of the file
+function checkForDataLeaks(browser){
+  var inputs = browser.document.getElementsByTagName("input");
+  var inputNodes = Array.from(inputs);
+  inputNodes.map(function(node){
+    //Input Tests
+    if (node.type == "submit"){
+      browser.
+        pressButton(node.name, function() {
+          //'<div><div>test</div>
+          if (true){
+            console.log("TTT: " + browser.document.getElementsByTagName("pre"));
+            console.log("TTT: " + browser.document.getElementsByTagName("pre").innerText.indexOf("error in your SQL syntax") > 0);
+            console.log("HTML was rendered to the page.");
+          }else{
+            console.log("HTML was not rendered to the page.");
+          }
+        });
+    }else{
+      node.value = "'";
+      displayNodeStats(node);
+    }
+  });
+}
+
 // ================= end functions and callback ===============================#
 
 // ================= commands =================================================#
@@ -236,6 +261,9 @@ function test(url,browser) {
     console.log("   ARE INPUTS ON PAGE SANITIZING");
     var complete = inputSanCheck(browser);
 
+    //console.log("   SENSITIVE DATA LEAKS");
+    //checkForDataLeaks(browser);
+
     console.log("   RESPONSE STATUSES");
     browser.fetch(url).then(function (response) {
       var status = response.status;
@@ -250,16 +278,16 @@ function test(url,browser) {
         console.log("URL '" + url + "' caused server error: " + status);
     });
 
-  });
+    if (argsObject.vectors != undefined){
+        vectorFileRead(argsObject.vectors, function(exploits){
+              console.log("    The Exploits");
+            exploits.forEach(function(currentValue){
+              console.log(currentValue);
+            });
+        });
+    }
 
-  if (argsObject.vectors != undefined){
-      vectorFileRead(argsObject.vectors, function(exploits){
-            console.log("The Exploits");
-          exploits.forEach(function(currentValue){
-            console.log(currentValue);
-          });
-      });
-  }
+  });
 }
 // ================= end commands =============================================#
 
