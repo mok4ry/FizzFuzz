@@ -28,7 +28,8 @@ var bodgeit = {
   passwordSelector: "password",
   password: "password",
   loginSelector: "Login",
-  successString: "You have logged in successfully"
+  successString: "You have logged in successfully",
+  loginPath: "bodgeit/login.jsp"
 }
 
 var dvwa = {
@@ -37,7 +38,8 @@ var dvwa = {
   passwordSelector: "password",
   password: "password",
   loginSelector: "Login",
-  successString: "You have logged in"
+  successString: "You have logged in",
+  loginPath: "dvwa/login.php"
 }
 // ================= end site objects for logging in ==========================#
 
@@ -57,8 +59,11 @@ function login(url, auth, callback) {
 
 // Takes a url, and runs the callback.
 // The callback exposes a browser object to interact with.
-function visit(url, callback) {
-  Browser.visit(url, function(e, browser) {
+function visit(url, browser, callback) {
+  if (browser == undefined) {
+    browser = Browser;
+  }
+  browser.visit(url, function() {
     callback(browser);
   });
 }
@@ -103,6 +108,7 @@ function getURLParams(browser) {
   });
   return params;
 }
+
 
 // Checks if the inputs on the given page are sanitizing
 // the inputed values before use.
@@ -160,54 +166,56 @@ function readHttpResponses(browser){
 }
 
 
+
 // ================= end functions and callback ===============================#
 
 // ================= commands =================================================#
 // lists information about the current browser session
 // crawls to an unvisited page on the same domain, and recurses
 // returns a list of visitedURLs
-function discoverAndCrawl(url) {
-  return visit(url, function(browser) {
-    urlDomain = browser.document.location.hostname
-    console.log("RUNNING DISCOVERY FOR " + url);
-    // append url to list of urls
-    process.visitedURLs.push(url);
-    console.log(process.visitedURLs.length)
+function discoverAndCrawl(browser) {
+  urlDomain = browser.document.location.hostname
+  url = browser.document.location.href
+  console.log("RUNNING DISCOVERY FOR " + url);
+  // append url to list of urls
+  process.visitedURLs.push(url);
+  console.log(process.visitedURLs.length)
 
-    console.log("   LINKS ON THE PAGE:");
-    var links = queryLinks(browser);
-    console.log(links);
+  console.log("   LINKS ON THE PAGE:");
+  var links = queryLinks(browser);
+  console.log(links);
 
-    console.log("   INPUTS ON THE PAGE:");
-    var inputs = queryInputs(browser);
-    console.log(inputs);
+  console.log("   INPUTS ON THE PAGE:");
+  var inputs = queryInputs(browser);
+  console.log(inputs);
 
-    console.log("   READING HTTP RESPONCES")
-    var http_responces = readHttpResponses(browser);
-    console.log(http_responces);
+  console.log("   COOKIES ON THE BROWSER:");
+  var cookies = getCookies(browser);
+  console.log(cookies);
 
-    console.log("   COOKIES ON THE BROWSER:");
-    var cookies = getCookies(browser);
-    console.log(cookies);
+  console.log("   PARAMETERS ON THE URL:");
+  var params = getURLParams(browser);
+  console.log(params);
 
-    console.log("   PARAMETERS ON THE URL:");
-    var params = getURLParams(browser);
-    console.log(params);
+  var crawlLinks = links.filter( function(link) {
+    return (link.indexOf(urlDomain) != -1) &&
+            (link.indexOf(".xml") == -1 ) &&
+            (process.visitedURLs.indexOf(link)==-1);
+  }).forEach( function(link) {
+    visitAndCrawl(link, browser);
+  }, []);
+  return crawlLinks;
+}
 
-    var crawlLinks = links.filter( function(link) {
-      return (link.indexOf(urlDomain) != -1) &&
-              (link.indexOf(".xml") == -1 ) &&
-              (process.visitedURLs.indexOf(link)==-1);
-    }).forEach( function(link) {
-      discoverAndCrawl(link);
-    }, []);
-    return crawlLinks;
+function visitAndCrawl(url, browser) {
+  return visit(url, browser, function(browser) {
+    discoverAndCrawl(browser);
   });
 }
 
 function test(url) {
   login("http://localhost:7000/dvwa/login.php",auth,function(browser) {
-    visit("brute",function(broswer){
+    visit(url,browser,function(broswer){
       console.log("   ARE INPUTS ON PAGE SANITIZING");
       var complete = inputSanCheck(browser);
     });
@@ -237,11 +245,26 @@ if (argsObject["custom-auth"]) {
 }
 
 if (customAuth) {
-  login(argsObject.url, auth, function(browser) {
+  baseURL = argsObject.url.match(/https?\:\/\/[^/]*\//)[0];
+  loginURL = baseURL + auth.loginPath;
+  console.log(loginURL);
+  login(loginURL, auth, function(browser) {
     var bodyText = browser.document.body.textContent;
     var didWork = bodyText.indexOf(auth.successString) != -1;
     console.log("Logged in? : "+didWork);
+    if (argsObject.command == "test") {
+      test();
+    }
+    else if (argsObject.command == "discover") {
+      visitAndCrawl(argsObject.url, browser);
+    }
   });
-}
+}else {
 
-runCommand();
+  if (argsObject.command == "test") {
+    test();
+  }
+  else if (argsObject.command == "discover") {
+    visitAndCrawl(argsObject.url);
+  }
+}
