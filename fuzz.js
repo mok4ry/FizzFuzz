@@ -31,7 +31,7 @@ var bodgeit = {
   successString: "You have logged in successfully"
 }
 
-var dwva = {
+var dvwa = {
   userNameSelector: "username",
   userName: "admin",
   passwordSelector: "password",
@@ -229,7 +229,7 @@ var auth;
 if (argsObject["custom-auth"]) {
   customAuth = true;
   if (argsObject["custom-auth"] == "dvwa") {
-    auth = dwva;
+    auth = dvwa;
   }
   else if (argsObject["custom-auth"] == "bodgeit") {
     auth = bodgeit;
