@@ -164,9 +164,11 @@ function readHttpResponses(browser){
 }
 
 // Returns an array of exploits
-function vectorFileRead(filename){
+function vectorFileRead(filename, callback){
+  var exploits;
   fs.readFile(filename,function(err, data){
-    return data.toString().split('\n');
+    exploits = data.toString().split('/n');
+    callback(exploits);
   });
 }
 
@@ -227,16 +229,12 @@ function test(url,browser) {
   });
 
   if (argsObject.vectors != undefined){
-      vectorFileRead(argsObject.vectors);
-  }
-}
-
-function runCommand(){
-  if (argsObject.command == "test") {
-    test(argsObject.url);
-  }
-  else if (argsObject.command == "discover") {
-    discoverAndCrawl(argsObject.url);
+      vectorFileRead(argsObject.vectors, function(exploits){
+            console.log("The Exploits");
+          exploits.forEach(function(currentValue){
+            console.log(currentValue);
+          });
+      });
   }
 }
 // ================= end commands =============================================#
