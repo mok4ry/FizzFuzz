@@ -41,6 +41,7 @@ var dvwa = {
   successString: "You have logged in",
   loginPath: "dvwa/login.php"
 }
+
 // ================= end site objects for logging in ==========================#
 
 // ================= functions and callback ===================================#
@@ -159,7 +160,7 @@ function displayNodeStats(node){
 function readHttpResponses(browser){
   var r = browser.resources;
   r.forEach(function(obj){
-    console.log("Status Code: " + obj.response && obj.response.status);
+    console.log("Status Code: " + (obj.response && obj.response.status));
   });
 }
 
@@ -237,7 +238,18 @@ function test(url,browser) {
     var complete = inputSanCheck(browser);
 
     console.log("   RESPONSE STATUSES");
-    var statuses = readHttpResponses(browser);
+    browser.fetch(url).then(function (response) {
+      var status = response.status;
+
+      if (status >= 200 && status < 300)
+        console.log("OK");
+      if (status >= 300 && status < 400)
+        console.log("URL: '" + url + "' caused redirection: " + status);
+      else if (status >= 400 && status < 500)
+        console.log("URL '" + url + "' caused client error: " + status);
+      else if (status >= 500)
+        console.log("URL '" + url + "' caused server error: " + status);
+    });
 
   });
 
