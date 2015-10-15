@@ -280,7 +280,7 @@ function test(url,browser) {
 
     if (argsObject.vectors != undefined){
         vectorFileRead(argsObject.vectors, function(exploits){
-              console.log("    The Exploits");
+              console.log("   The Exploits");
             exploits.forEach(function(currentValue){
               console.log(currentValue);
             });
