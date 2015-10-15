@@ -109,26 +109,34 @@ function getURLParams(browser) {
 function inputSanCheck(browser){
   var inputs = browser.document.getElementsByTagName("input");
   var inputNodes = Array.from(inputs);
-  inputTestHTML(browser, inputNodes);
+  inputTestHTML(browser, inputNodes,"'<div><div id='1234'>test</div>","#1234");
+  inputTestHTML(browser, inputNodes,"<div id='1234'>test</div>","#1234");
+
   return true;
 }
 
 // Inject HTML on the page and see if it becomes an element
-function inputTestHTML(browser, nodes){
+//Ex: broswer - browser
+//    nodes - inputs
+//    injectedHTML - "'<div><div id='1234'>test</div>"
+//    htmlId - "#1234"
+function inputTestHTML(browser, nodes, injectedHTML, htmlId){
   nodes.map(function(node){
     //Input Tests
+
     if (node.type == "submit"){
       browser.
         pressButton(node.name, function() {
           console.log("submit button pressed");
-          if (browser.queryAll('#test123').length > 0){
+          //'<div><div>test</div>
+          if (browser.queryAll(htmlId).length > 0){
             console.log("HTML was rendered to the page.");
           }else{
             console.log("HTML was not rendered to the page.");
           }
         });
     }else{
-      node.value = "<div id='test123'></div>";
+      node.value = injectedHTML;
       displayNodeStats(node);
     }
   });
