@@ -15,6 +15,6 @@ To run the application, navigate to this directory, and run the following:
 2. ```node fuzz.js <discover | test> <url> <options>```  
 
 The two available commands are `discover` and `test`.  
-Test is currently in progress, discover is functional.  
+Test mostly functional, discover might be functional - was working in Release 1.
 The url should be a fully formed url, with http or https.  
 Options can include custom auth (as described in the proposal).  
