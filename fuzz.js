@@ -109,6 +109,62 @@ function getURLParams(browser) {
   return params;
 }
 
+
+// Checks if the inputs on the given page are sanitizing
+// the inputed values before use.
+function inputSanCheck(browser){
+  var inputs = browser.document.getElementsByTagName("input");
+  var inputNodes = Array.from(inputs);
+  inputTestHTML(browser, inputNodes,"'<div><div id='test1234'>test</div>","#test1234");
+  return true;
+}
+
+// Inject HTML on the page and see if it becomes an element
+//Ex: broswer - browser
+//    nodes - inputs
+//    injectedHTML - "'<div><div id='1234'>test</div>"
+//    htmlId - "#1234"
+function inputTestHTML(browser, nodes, injectedHTML, htmlId){
+  nodes.map(function(node){
+    //Input Tests
+
+    if (node.type == "submit"){
+      browser.
+        pressButton(node.name, function() {
+          console.log("submit button pressed");
+          //'<div><div>test</div>
+          if (browser.queryAll(htmlId).length > 0){
+            console.log("HTML was rendered to the page.");
+          }else{
+            console.log("HTML was not rendered to the page.");
+          }
+        });
+    }else{
+      node.value = injectedHTML;
+      displayNodeStats(node);
+    }
+  });
+}
+
+
+
+// Pretty prints out information about an element
+function displayNodeStats(node){
+  console.log("Node name: " + node.name);
+  console.log("   Node type: " + node.type);
+  console.log("   Node id: " + node.id);
+  console.log("   Node value: " + node.value);
+}
+
+function readHttpResponses(browser){
+  var r = browser.resources;
+  r.forEach(function(obj){
+    console.log("Status Code: " + obj.statusCode);
+  });
+}
+
+
+
 // ================= end functions and callback ===============================#
 
 // ================= commands =================================================#
@@ -155,12 +211,24 @@ function visitAndCrawl(url, browser) {
   });
 }
 
-function test() {
-  console.log("NOT IMPLEMENTED YET");
+function test(url,browser) {
+  visit(url,browser,function(broswer){
+    console.log("   INPUTS ON THE PAGE:");
+    var inputs = queryInputs(browser);
+    console.log(inputs);
+
+    console.log("   ARE INPUTS ON PAGE SANITIZING");
+    var complete = inputSanCheck(browser);
+  });
 }
 
 function runCommand(){
-
+  if (argsObject.command == "test") {
+    test(argsObject.url);
+  }
+  else if (argsObject.command == "discover") {
+    discoverAndCrawl(argsObject.url);
+  }
 }
 // ================= end commands =============================================#
 
@@ -184,17 +252,14 @@ if (customAuth) {
     var bodyText = browser.document.body.textContent;
     var didWork = bodyText.indexOf(auth.successString) != -1;
     console.log("Logged in? : "+didWork);
-
     if (argsObject.command == "test") {
-      test();
+      test(argsObject.url, browser);
     }
     else if (argsObject.command == "discover") {
       visitAndCrawl(argsObject.url, browser);
     }
   });
-
-}
-else {
+}else {
 
   if (argsObject.command == "test") {
     test();
@@ -202,5 +267,4 @@ else {
   else if (argsObject.command == "discover") {
     visitAndCrawl(argsObject.url);
   }
-
 }
