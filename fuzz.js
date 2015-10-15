@@ -28,7 +28,8 @@ var bodgeit = {
   passwordSelector: "password",
   password: "password",
   loginSelector: "Login",
-  successString: "You have logged in successfully"
+  successString: "You have logged in successfully",
+  loginPath: "bodgeit/login.jsp"
 }
 
 var dvwa = {
@@ -37,7 +38,8 @@ var dvwa = {
   passwordSelector: "password",
   password: "password",
   loginSelector: "Login",
-  successString: "You have logged in"
+  successString: "You have logged in",
+  loginPath: "dvwa/login.php"
 }
 // ================= end site objects for logging in ==========================#
 
@@ -57,8 +59,11 @@ function login(url, auth, callback) {
 
 // Takes a url, and runs the callback.
 // The callback exposes a browser object to interact with.
-function visit(url, callback) {
-  Browser.visit(url, function(e, browser) {
+function visit(url, browser, callback) {
+  if (browser == undefined) {
+    browser = Browser;
+  }
+  browser.visit(url, function() {
     callback(browser);
   });
 }
@@ -104,50 +109,6 @@ function getURLParams(browser) {
   return params;
 }
 
-// Checks if the inputs on the given page are sanitizing
-// the inputed values before use.
-function inputSanCheck(browser){
-  var inputs = browser.document.getElementsByTagName("input");
-  var inputNodes = Array.from(inputs);
-  inputTestHTML(browser, inputNodes);
-  return true;
-}
-
-// Inject HTML on the page and see if it becomes an element
-function inputTestHTML(browser, nodes){
-  nodes.map(function(node){
-    //Input Tests
-    if (node.type == "submit"){
-      browser.
-        pressButton(node.name, function() {
-          console.log("submit button pressed");
-          if (browser.queryAll('test123') != []){
-            console.log("HTML was rendered to the page.");
-          }else{
-            console.log("HTML was not rendered to the page.")
-          }
-        });
-    }else{
-      node.value = "<div id='test123'></div>";
-      displayNodeStats(node);
-    }
-  });
-}
-
-// Pretty prints out information about an element
-function displayNodeStats(node){
-  console.log("Node name: " + node.name);
-  console.log("   Node type: " + node.type);
-  console.log("   Node id: " + node.id);
-  console.log("   Node value: " + node.value);
-}
-
-function readHttpResponses(browser){
-  var r = browser.resources;
-  r.forEach(function(obj){
-    console.log("Status Code: " + obj.statusCode);
-  });
-}
 // ================= end functions and callback ===============================#
 
 // ================= commands =================================================#
@@ -170,10 +131,6 @@ function discoverAndCrawl(browser) {
   var inputs = queryInputs(browser);
   console.log(inputs);
 
-  console.log("   INPUTS ON PAGE SANITIZING")
-  var complete = inputSanCheck(browser);
-  console.log(complete);
-
   console.log("   COOKIES ON THE BROWSER:");
   var cookies = getCookies(browser);
   console.log(cookies);
@@ -187,13 +144,13 @@ function discoverAndCrawl(browser) {
             (link.indexOf(".xml") == -1 ) &&
             (process.visitedURLs.indexOf(link)==-1);
   }).forEach( function(link) {
-    visitAndCrawl(link);
+    visitAndCrawl(link, browser);
   }, []);
   return crawlLinks;
 }
 
-function visitAndCrawl(url) {
-  return visit(url, function(browser) {
+function visitAndCrawl(url, browser) {
+  return visit(url, browser, function(browser) {
     discoverAndCrawl(browser);
   });
 }
@@ -220,7 +177,10 @@ if (argsObject["custom-auth"]) {
 }
 
 if (customAuth) {
-  login(argsObject.url, auth, function(browser) {
+  baseURL = argsObject.url.match(/https?\:\/\/[^/]*\//)[0];
+  loginURL = baseURL + auth.loginPath;
+  console.log(loginURL);
+  login(loginURL, auth, function(browser) {
     var bodyText = browser.document.body.textContent;
     var didWork = bodyText.indexOf(auth.successString) != -1;
     console.log("Logged in? : "+didWork);
@@ -229,7 +189,7 @@ if (customAuth) {
       test();
     }
     else if (argsObject.command == "discover") {
-      discoverAndCrawl(browser);
+      visitAndCrawl(argsObject.url, browser);
     }
   });
 
