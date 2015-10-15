@@ -223,9 +223,8 @@ function test(url,browser) {
   process.didTakeTime = false;
   var timeoutId = setTimeout(function() {
     process.didTakeTime = true;
-  }, argsObject.slow);
-
-  visit(url,browser,function(broswer){
+  }, argsObject.slow)
+  visit(url,browser,function(browser){
     console.log("   DID LOAD IN A REASONABLE TIME?");
     console.log(!process.didTakeTime);
     clearTimeout(timeoutId);
@@ -291,12 +290,15 @@ if (customAuth) {
       visitAndCrawl(argsObject.url, browser);
     }
   });
-}else {
+} else {
 
   if (argsObject.command == "test") {
-    test();
+    Browser.visit(argsObject.url, function(e, browser) {
+      test(argsObject.url, browser);
+    });
   }
   else if (argsObject.command == "discover") {
     visitAndCrawl(argsObject.url);
   }
+
 }
