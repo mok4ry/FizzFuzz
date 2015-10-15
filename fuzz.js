@@ -198,12 +198,12 @@ function discoverAndCrawl(url) {
 }
 
 function test(url) {
-  login(url,auth,visit(url, function(browser) {
-    console.log("   ARE INPUTS ON PAGE SANITIZING");
-    var complete = inputSanCheck(browser);
-    console.log(complete);
-    })
-  );
+  login("http://localhost:7000/dvwa/login.php",auth,function(browser) {
+    visit("brute",function(broswer){
+      console.log("   ARE INPUTS ON PAGE SANITIZING");
+      var complete = inputSanCheck(browser);
+    });
+  });
 }
 
 function runCommand(){
