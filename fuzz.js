@@ -228,6 +228,7 @@ if (customAuth) {
     var bodyText = browser.document.body.textContent;
     var didWork = bodyText.indexOf(auth.successString) != -1;
     console.log("Logged in? : "+didWork);
-    runCommand();
   });
 }
+
+runCommand();
