@@ -115,9 +115,7 @@ function getURLParams(browser) {
 function inputSanCheck(browser){
   var inputs = browser.document.getElementsByTagName("input");
   var inputNodes = Array.from(inputs);
-  inputTestHTML(browser, inputNodes,"'<div><div id='1234'>test</div>","#1234");
-  inputTestHTML(browser, inputNodes,"<div id='1234'>test</div>","#1234");
-
+  inputTestHTML(browser, inputNodes,"'<div><div id='test1234'>test</div>","#test1234");
   return true;
 }
 
@@ -213,12 +211,14 @@ function visitAndCrawl(url, browser) {
   });
 }
 
-function test(url) {
-  login("http://localhost:7000/dvwa/login.php",auth,function(browser) {
-    visit(url,browser,function(broswer){
-      console.log("   ARE INPUTS ON PAGE SANITIZING");
-      var complete = inputSanCheck(browser);
-    });
+function test(url,browser) {
+  visit(url,browser,function(broswer){
+    console.log("   INPUTS ON THE PAGE:");
+    var inputs = queryInputs(browser);
+    console.log(inputs);
+
+    console.log("   ARE INPUTS ON PAGE SANITIZING");
+    var complete = inputSanCheck(browser);
   });
 }
 
@@ -253,7 +253,7 @@ if (customAuth) {
     var didWork = bodyText.indexOf(auth.successString) != -1;
     console.log("Logged in? : "+didWork);
     if (argsObject.command == "test") {
-      test();
+      test(argsObject.url, browser);
     }
     else if (argsObject.command == "discover") {
       visitAndCrawl(argsObject.url, browser);
