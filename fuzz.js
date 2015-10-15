@@ -159,7 +159,7 @@ function displayNodeStats(node){
 function readHttpResponses(browser){
   var r = browser.resources;
   r.forEach(function(obj){
-    console.log("Status Code: " + obj.statusCode);
+    console.log("Status Code: " + obj.response && obj.response.status);
   });
 }
 
@@ -234,6 +234,10 @@ function test(url,browser) {
 
     console.log("   ARE INPUTS ON PAGE SANITIZING");
     var complete = inputSanCheck(browser);
+
+    console.log("   RESPONSE STATUSES");
+    var statuses = readHttpResponses(browser);
+
   });
 
   if (argsObject.vectors != undefined){
