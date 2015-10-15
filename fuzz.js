@@ -134,6 +134,8 @@ function inputTestHTML(browser, nodes){
   });
 }
 
+
+
 // Pretty prints out information about an element
 function displayNodeStats(node){
   console.log("Node name: " + node.name);
@@ -148,6 +150,8 @@ function readHttpResponses(browser){
     console.log("Status Code: " + obj.statusCode);
   });
 }
+
+
 // ================= end functions and callback ===============================#
 
 // ================= commands =================================================#
@@ -169,10 +173,6 @@ function discoverAndCrawl(url) {
     console.log("   INPUTS ON THE PAGE:");
     var inputs = queryInputs(browser);
     console.log(inputs);
-
-    console.log("   INPUTS ON PAGE SANITIZING")
-    var complete = inputSanCheck(browser);
-    console.log(complete);
 
     console.log("   READING HTTP RESPONCES")
     var http_responces = readHttpResponses(browser);
@@ -197,13 +197,18 @@ function discoverAndCrawl(url) {
   });
 }
 
-function test() {
-  console.log("NOT IMPLEMENTED YET");
+function test(url) {
+  login(url,auth,visit(url, function(browser) {
+    console.log("   ARE INPUTS ON PAGE SANITIZING");
+    var complete = inputSanCheck(browser);
+    console.log(complete);
+    })
+  );
 }
 
 function runCommand(){
   if (argsObject.command == "test") {
-    test();
+    test(argsObject.url);
   }
   else if (argsObject.command == "discover") {
     discoverAndCrawl(argsObject.url);
@@ -228,6 +233,7 @@ if (customAuth) {
     var bodyText = browser.document.body.textContent;
     var didWork = bodyText.indexOf(auth.successString) != -1;
     console.log("Logged in? : "+didWork);
-    runCommand();
   });
 }
+
+runCommand();
