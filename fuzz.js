@@ -109,50 +109,6 @@ function getURLParams(browser) {
   return params;
 }
 
-// Checks if the inputs on the given page are sanitizing
-// the inputed values before use.
-function inputSanCheck(browser){
-  var inputs = browser.document.getElementsByTagName("input");
-  var inputNodes = Array.from(inputs);
-  inputTestHTML(browser, inputNodes);
-  return true;
-}
-
-// Inject HTML on the page and see if it becomes an element
-function inputTestHTML(browser, nodes){
-  nodes.map(function(node){
-    //Input Tests
-    if (node.type == "submit"){
-      browser.
-        pressButton(node.name, function() {
-          console.log("submit button pressed");
-          if (browser.queryAll('test123') != []){
-            console.log("HTML was rendered to the page.");
-          }else{
-            console.log("HTML was not rendered to the page.")
-          }
-        });
-    }else{
-      node.value = "<div id='test123'></div>";
-      displayNodeStats(node);
-    }
-  });
-}
-
-// Pretty prints out information about an element
-function displayNodeStats(node){
-  console.log("Node name: " + node.name);
-  console.log("   Node type: " + node.type);
-  console.log("   Node id: " + node.id);
-  console.log("   Node value: " + node.value);
-}
-
-function readHttpResponses(browser){
-  var r = browser.resources;
-  r.forEach(function(obj){
-    console.log("Status Code: " + obj.statusCode);
-  });
-}
 // ================= end functions and callback ===============================#
 
 // ================= commands =================================================#
@@ -174,10 +130,6 @@ function discoverAndCrawl(browser) {
   console.log("   INPUTS ON THE PAGE:");
   var inputs = queryInputs(browser);
   console.log(inputs);
-
-  console.log("   INPUTS ON PAGE SANITIZING")
-  var complete = inputSanCheck(browser);
-  console.log(complete);
 
   console.log("   COOKIES ON THE BROWSER:");
   var cookies = getCookies(browser);
@@ -237,7 +189,6 @@ if (customAuth) {
       test();
     }
     else if (argsObject.command == "discover") {
-      console.log("DISCOVERING " + argsObject.url)
       visitAndCrawl(argsObject.url, browser);
     }
   });
